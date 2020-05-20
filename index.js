@@ -57,6 +57,20 @@ app.get('/info', (req, res) => {
 
 app.post('/api/notes', (request, response) => {
     const body = request.body
+
+    if (!body.name) {
+        return response.status(400).json({ 
+          error: 'gotta have a name' 
+        })
+      } else if (!body.number) {
+          return response.status(400).json({
+              error: 'gotta have a number'
+          })
+      } else if (persons.find(person => person.name === body.name)) {
+          return response.status(400).json({
+              error: 'gotta have a UNIQUE name'
+          })
+      }
   
     const person = {
       name: body.name,
