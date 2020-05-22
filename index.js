@@ -41,8 +41,10 @@ app.get('/', (req, res) => {
 })
 
 app.get('/info', (req, res) => {
-    res.send(`<div>Phonebook has info for ${persons.length} people</div>
+  Person.countDocuments((err, count) => {
+    res.send(`<div>Phonebook has info for ${count} people</div>
     <div>${new Date()}</div>`)
+  })
 })
 
 app.post('/api/persons', (request, response) => {
@@ -73,6 +75,23 @@ app.delete('/api/persons/:id', (request, response, next) => {
     })
     .catch(error => next(error))
 })
+
+// EDITING OF NUMBER NOT WORKING ATM
+
+/*app.put('/api/persons/:id', (request, response, next) => {
+  const body = request.body
+
+  const person = {
+    name: body.name,
+    number: body.number,
+  }
+
+  Person.findByIdAndUpdate(request.params.id, person, { new: true })
+    .then(updatedPerson => {
+      response.json(updatedPerson)
+    })
+    .catch(error => next(error))
+}) */
 
 const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: 'unknown endpoint' })
