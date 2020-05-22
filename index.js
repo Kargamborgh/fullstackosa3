@@ -5,12 +5,14 @@ const morgan = require('morgan')
 const cors = require('cors')
 const Person = require('./models/person')
 
+app.use(express.static('build'))
+app.use(express.json())
+
 morgan.token('body', function (req, res) { return JSON.stringify(req.body) })
 
-app.use(express.json())
 app.use(morgan(':method :url :status :response-time ms - :res[content-length] :body - :req[content]'))
 app.use(cors())
-app.use(express.static('build'))
+
 
 const generateId = (max) => {
     return Math.floor(Math.random() * Math.floor(max))
@@ -26,17 +28,17 @@ app.get('/', (req, res) => {
     })
   })
 
-  app.get('/api/persons/:id', (request, response) => {
-    const id = Number(request.params.id)
-    //unnecessary logging of id console.log(id)
-    const person = persons.find(person => person.id === id)
-    if (person) {
+  app.get('/api/persons/:id', (request, response, next) => {
+  Person.findById(request.params.id)
+    .then(person => {
+      if (person) {
         response.json(person)
       } else {
         response.status(404).end()
       }
-      console.log(person)
-  })
+    })
+    .catch(error => next(error))
+})
 
 app.get('/info', (req, res) => {
     res.send(`<div>Phonebook has info for ${persons.length} people</div>
@@ -64,40 +66,31 @@ app.post('/api/persons', (request, response) => {
   })
 })
 
-/*app.post('/api/persons', (request, response) => {
-    const body = request.body
+app.delete('/api/persons/:id', (request, response, next) => {
+  Person.findByIdAndRemove(request.params.id)
+    .then(result => {
+      response.status(204).end()
+    })
+    .catch(error => next(error))
+})
 
-    if (!body.name) {
-        return response.status(400).json({ 
-          error: 'gotta have a name' 
-        })
-      } else if (!body.number) {
-          return response.status(400).json({
-              error: 'gotta have a number'
-          })
-      } else if (persons.find(person => person.name === body.name)) {
-          return response.status(400).json({
-              error: 'gotta have a UNIQUE name'
-          })
-      }
-  
-    const person = {
-      name: body.name,
-      number: body.number,
-      id: generateId(100000000),
-    }
-  
-    persons = persons.concat(person)
-  
-    response.json(person)
-  }) */
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: 'unknown endpoint' })
+}
 
-app.delete('/api/persons/:id', (request, response) => {
-    const id = Number(request.params.id)
-    persons = persons.filter(person => person.id !== id)
+app.use(unknownEndpoint)
 
-    response.status(204).end()
-  })
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
+
+  if (error.name === 'CastError' && error.kind == 'ObjectId') {
+    return response.status(400).send({ error: 'malformatted id' })
+  } 
+
+  next(error)
+}
+
+app.use(errorHandler)
 
 const PORT = process.env.PORT
 app.listen(PORT, () => {

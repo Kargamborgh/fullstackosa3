@@ -1,4 +1,6 @@
-const mongoose = require('mongoose')
+// NO LONGER USED, SAVED FOR POSTERITY
+
+/*const mongoose = require('mongoose')
 
 if (process.argv.length<3) {
   console.log('give password as argument')
@@ -37,4 +39,4 @@ Person.find({}).then(result => {
       console.log(`${person.name} ${person.number}`)
     })
     mongoose.connection.close()
-  })
+  }) */
