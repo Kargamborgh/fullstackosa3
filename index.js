@@ -44,6 +44,27 @@ app.get('/info', (req, res) => {
 })
 
 app.post('/api/persons', (request, response) => {
+  const body = request.body
+
+  if (body.name === undefined) {
+    return response.status(400).json({ error: 'gotta have a name' })
+  }
+
+  if (body.number === undefined) {
+    return response.status(400).json({ error: 'gotta have a number' })
+  }
+
+  const person = new Person({
+    name: body.name,
+    number: body.number
+  })
+
+  person.save().then(savedPerson => {
+    response.json(savedPerson)
+  })
+})
+
+/*app.post('/api/persons', (request, response) => {
     const body = request.body
 
     if (!body.name) {
@@ -69,7 +90,7 @@ app.post('/api/persons', (request, response) => {
     persons = persons.concat(person)
   
     response.json(person)
-  })
+  }) */
 
 app.delete('/api/persons/:id', (request, response) => {
     const id = Number(request.params.id)
