@@ -1,3 +1,4 @@
+/* eslint-disable linebreak-style */
 // NO LONGER USED, SAVED FOR POSTERITY
 
 /*const mongoose = require('mongoose')

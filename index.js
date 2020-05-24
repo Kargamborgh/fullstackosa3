@@ -1,3 +1,4 @@
+/* eslint-disable linebreak-style */
 require('dotenv').config()
 const express = require('express')
 const app = express()
@@ -8,27 +9,23 @@ const Person = require('./models/person')
 app.use(express.static('build'))
 app.use(express.json())
 
-morgan.token('body', function (req, res) { return JSON.stringify(req.body) })
+// eslint-disable-next-line no-unused-vars
+morgan.token('body', function (req, _res) { return JSON.stringify(req.body) })
 
 app.use(morgan(':method :url :status :response-time ms - :res[content-length] :body - :req[content]'))
 app.use(cors())
 
+app.get('/', (_req, res) => {
+  res.send('<h1>Puhelinluettelo ebin</h1>')
+})
 
-const generateId = (max) => {
-    return Math.floor(Math.random() * Math.floor(max))
-  }
-
-app.get('/', (req, res) => {
-    res.send('<h1>Puhelinluettelo ebin</h1>')
+app.get('/api/persons', (_request, response) => {
+  Person.find({}).then(persons => {
+    response.json(persons)
   })
+})
 
-  app.get('/api/persons', (request, response) => {
-    Person.find({}).then(persons => {
-      response.json(persons)
-    })
-  })
-
-  app.get('/api/persons/:id', (request, response, next) => {
+app.get('/api/persons/:id', (request, response, next) => {
   Person.findById(request.params.id)
     .then(person => {
       if (person) {
@@ -40,8 +37,8 @@ app.get('/', (req, res) => {
     .catch(error => next(error))
 })
 
-app.get('/info', (req, res) => {
-  Person.countDocuments((err, count) => {
+app.get('/info', (_req, res) => {
+  Person.countDocuments((_err, count) => {
     res.send(`<div>Phonebook has info for ${count} people</div>
     <div>${new Date()}</div>`)
   })
@@ -64,16 +61,17 @@ app.post('/api/persons', (request, response, next) => {
   })
 
   person
-  .save()
+    .save()
     .then(savedPerson => savedPerson.toJSON())
     .then(savedAndFormattedPerson => {
       response.json(savedAndFormattedPerson)
     })
     .catch(error => next(error))
-  })
+})
 
 app.delete('/api/persons/:id', (request, response, next) => {
   Person.findByIdAndRemove(request.params.id)
+    // eslint-disable-next-line no-unused-vars
     .then(result => {
       response.status(204).end()
     })
@@ -97,16 +95,16 @@ app.delete('/api/persons/:id', (request, response, next) => {
     .catch(error => next(error))
 }) */
 
-const unknownEndpoint = (request, response) => {
+const unknownEndpoint = (_request, response) => {
   response.status(404).send({ error: 'unknown endpoint' })
 }
 
 app.use(unknownEndpoint)
 
-const errorHandler = (error, request, response, next) => {
+const errorHandler = (error, _request, response, next) => {
   console.error(error.message)
 
-  if (error.name === 'CastError' && error.kind == 'ObjectId') {
+  if (error.name === 'CastError' && error.kind === 'ObjectId') {
     return response.status(400).send({ error: 'malformatted id' })
   }  else if (error.name === 'ValidationError') {
     return response.status(400).json({ error: error.message })
@@ -121,5 +119,5 @@ app.use(errorHandler)
 
 const PORT = process.env.PORT
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`)
+  console.log(`Server running on port ${PORT}`)
 })
